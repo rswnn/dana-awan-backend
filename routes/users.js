@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 const model = require('../models/index')
 
+
 /* GET users listing. */
 router.get('/', async function (req, res, next) {
   try {
@@ -27,6 +28,36 @@ router.get('/', async function (req, res, next) {
     });
   }
 });
+
+router.get('/:id', async (req, res, next) => {
+  try {
+    const usersId = req.params.id
+    const users = await model.users.findOne({
+      where: {
+        'id': usersId
+      }
+    })
+    if (users) {
+      res.status(200).json({
+        'status': true,
+        'message': "ditemukan",
+        'user': users
+      })
+    } else {
+      res.status(404).json({
+        'status': false,
+        'message': " tidak ditemukan",
+        'user': {}
+      })
+    }
+  } catch (error) {
+    res.status(400).json({
+      'status': false,
+      'message': error.message,
+      'data': {}
+    })
+  }
+})
 
 router.post('/', async function (req, res, next) {
   try {
@@ -97,12 +128,12 @@ router.patch('/:id', async function (req, res, next) {
   }
 })
 
-router.delete('/:name', async function (req, res, next) {
+router.delete('/:id', async function (req, res, next) {
   try {
-    const name = req.params.name
+    const id = req.params.id
     const users = await model.users.destroy({
       where: {
-        name: name
+        id: id
       }
     })
     if (users) {
@@ -117,6 +148,72 @@ router.delete('/:name', async function (req, res, next) {
       'status': 'ERROR',
       'messages': error.message,
       'data': {},
+    })
+  }
+})
+
+
+router.post('/searchcontact', async (req, res, next) => {
+  try {
+    const { phone_number } = req.body
+
+    const users = await model.users.findOne({
+      where: {
+        phone_number: phone_number
+      }
+    })
+
+    if (users) {
+      res.status(200).json({
+        'status': true,
+        'message': 'kontak ditemukan',
+        'contact': users
+      })
+    } else {
+      res.status(401).json({
+        'status': false,
+        'message': 'kontak tidak ditemukan',
+        'contact': {}
+      })
+    }
+  } catch (error) {
+    res.status(400).json({
+      'success': false,
+      'message': 'kontak tidak ditemukan',
+      'data': {}
+    })
+  }
+})
+
+router.post('/pin', async (req, res, next) => {
+  try {
+    const { phone_number, pin } = req.body
+
+    const users = await model.users.findOne({
+      where: {
+        pin: pin
+      }
+    })
+    if (users) {
+      if (users.phone_number === phone_number) {
+        res.status(200).json({
+          'success': true,
+          'message': 'pin kamu benar !',
+          'data': users
+        })
+      } else {
+        res.status(400).json({
+          'success': false,
+          'message': 'pin kamu salah !',
+          'data': {}
+        })
+      }
+    }
+  } catch (error) {
+    res.status(400).json({
+      'success': false,
+      'message': 'pin salah !',
+      'data': {}
     })
   }
 })
