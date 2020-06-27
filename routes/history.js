@@ -2,23 +2,33 @@ var express = require('express');
 var router = express.Router();
 const model = require('../models/index');
 const db = require('../models/index');
+const expressJwt = require('express-jwt')
+const jwt = require('jsonwebtoken')
 
-
-/* GET history listing. */
-router.get('/', async function (req, res, next) {
+router.get('/', expressJwt({ secret: 'shhhhhhhhh' }), async (req, res, next) => {
     try {
+        const token = req.headers.authorization.split(' ')[1]
+        const decode = jwt.decode(token, 'shhhhhhhhh')
+        const level_user = decode.level
         const history = await model.history.findAll({});
-        console.log(history)
-        if (history.length !== 0) {
-            res.json({
-                'status': false,
-                'message': 'data found !',
-                'data': history
-            });
+        if (level_user) {
+            if (history.length !== 0) {
+                res.json({
+                    'status': false,
+                    'message': 'data found !',
+                    'data': history
+                });
+            } else {
+                res.json({
+                    'status': false,
+                    'message': 'data not found !',
+                    'data': {}
+                });
+            }
         } else {
             res.json({
                 'status': false,
-                'message': 'data not found !',
+                'message': 'tidak memiliki access key !',
                 'data': {}
             });
         }
@@ -28,7 +38,6 @@ router.get('/', async function (req, res, next) {
             'message': error,
             'data': {}
         });
-        console.log(res.json())
     }
 });
 
@@ -50,7 +59,6 @@ router.get('/:id', async (req, res, next) => {
                 "send_to": sendTo,
                 "send_from": sendFrom
             }
-            console.log(result)
             res.status(200).json({
                 'status': true,
                 'message': "ditemukan",

@@ -40,6 +40,11 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: true,
       comment: "null"
     },
+    'active': {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      comment: "null"
+    },
     'createdAt': {
       type: DataTypes.DATE,
       allowNull: false,
@@ -56,7 +61,7 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING(255),
       allowNull: true,
       comment: "null"
-    }
+    },
   }, {
     tableName: 'users'
   });

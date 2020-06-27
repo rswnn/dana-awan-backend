@@ -1,22 +1,34 @@
 var express = require('express');
 var router = express.Router();
 const model = require('../models/index')
+const expressJwt = require('express-jwt')
+const jwt = require('jsonwebtoken')
 
 
-/* GET users listing. */
-router.get('/', async function (req, res, next) {
+router.get('/', expressJwt({ secret: 'shhhhhhhhh' }), async function (req, res, next) {
   try {
+    const token = req.headers.authorization.split(' ')[1]
+    const decode = jwt.decode(token, 'shhhhhhhhh')
+    const level_user = decode.level
     const users = await model.users.findAll({});
-    if (users.length !== 0) {
-      res.json({
-        'status': false,
-        'message': 'data found !',
-        'data': users
-      });
+    if (level_user) {
+      if (users.length !== 0) {
+        res.json({
+          'status': false,
+          'message': 'data found !',
+          'data': users
+        });
+      } else {
+        res.json({
+          'status': false,
+          'message': 'data not found !',
+          'data': {}
+        });
+      }
     } else {
       res.json({
         'status': false,
-        'message': 'data not found !',
+        'message': 'tidak memiliki access key !',
         'data': {}
       });
     }
@@ -214,6 +226,35 @@ router.post('/pin', async (req, res, next) => {
       'success': false,
       'message': 'pin salah !',
       'data': {}
+    })
+  }
+})
+
+router.patch('/block/:id', async function (req, res, next) {
+  try {
+    const userId = req.params.id
+    const
+      { active } = req.body
+    const users = await model.users.update({
+      active
+    }, {
+      where: {
+        id: userId
+      }
+    });
+    if (users) {
+      console.log(active)
+      res.json({
+        'status': 'OK',
+        'messages': 'User berhasil diupdate',
+        'data': users,
+      })
+    }
+  } catch (error) {
+    res.status(400).json({
+      'status': 'ERROR',
+      'messages': error.message,
+      'data': {},
     })
   }
 })
